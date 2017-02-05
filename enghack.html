@@ -1,0 +1,72 @@
+<html>
+  <body>
+    <script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBZGClzxJq5kEaYCxm3kkKxuYN7tVU1VlE&callback=initMap">
+    </script>
+    <script>
+      var electionObject;
+      var pollingBoundaries;
+      var percentage = [];
+      var electionData = {good: [], bad: [], critical: []}
+      var geometryPath = [];
+      var flightPath;
+      $.getJSON("http://opendata.city-of-waterloo.opendata.arcgis.com/datasets/bf1a68ade4b9410492138929a8b0e87a_0.geojson", function(data) {
+        electionObject = data;
+      });
+      $.getJSON("http://opendata.city-of-waterloo.opendata.arcgis.com/datasets/c0ebc48717f94abfa26401827922f0c1_0.geojson", function(data) {
+        pollingBoundaries = data;
+      });
+
+      function getResults() {
+        for (var i = 0; i < electionObject.features.length; i++) {
+          if (electionObject.features[i].properties.Cards_Cast / electionObject.features[i].properties.Registered_Voters * 100 !== Infinity) {
+            percentage.push([electionObject.features[i].properties.Cards_Cast / electionObject.features[i].properties.Registered_Voters * 100, electionObject.features[i].properties.Registered_Voters]);
+          }
+        }
+      }
+      function categorizeResults() {
+        for (var i = 0; i < percentage.length; i++) {
+          if (percentage[i][0] >= 70) electionData.good.push(Math.floor(percentage[i][0]));
+          else if (percentage[i][0] < 70 && percentage[i] >= 30) electionData.bad.push(Math.floor(percentage[i][0]));
+          else if (percentage[i][0] < 30) electionData.critical.push(Math.floor(percentage[i][0]));
+        }
+      }
+
+      var initMap = function() {
+        function formatData(index) {
+          geometryPath = [];
+          for (var i = 0; i < pollingBoundaries.features[index].geometry.coordinates[0].length; i++) {
+            var temp = {lat: pollingBoundaries.features[index].geometry.coordinates[0][i][1], lng: pollingBoundaries.features[index].geometry.coordinates[0][i][0]};
+            geometryPath.push(temp);
+          }
+          return true;
+        }
+        // Create a map object and specify the DOM element for display.
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 43.485280248, lng: -80.540422211},
+          scrollwheel: false,
+          zoom: 10
+
+        });
+
+
+
+        for (var i = 0; i < pollingBoundaries.features.length; i++) {
+          if (formatData(i)) {
+            flightPath = new google.maps.Polygon({
+              path: geometryPath,
+              strokeColor: "#ff0000",
+              fillColor: "#ff0000",
+              fillOpacity: 0.20,
+              strokeOpacity: 1.0,
+              strokeWeight: 2
+            });
+          }
+          flightPath.setMap(map);
+        }
+      }
+    </script>
+    <div id="map" style="width:100%;height:400px;"></div>
+  </body>
+</html>

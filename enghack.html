@@ -50,8 +50,6 @@
 
         });
 
-
-
         for (var i = 0; i < pollingBoundaries.features.length; i++) {
           if (formatData(i)) {
             flightPath = new google.maps.Polygon({
@@ -64,6 +62,42 @@
             });
           }
           flightPath.setMap(map);
+          google.maps.event.addListener(flightPath,"mouseover",function(){
+            var random = Math.floor(Math.random() * pollingBoundaries.features.length);
+            var contentString = '<div id="content">'+
+            '<div id="siteNotice">'+
+            '</div>'+
+            '<h1 id="firstHeading" class="firstHeading">' + pollingBoundaries.features[random] + '</h1>'+
+            '<div id="bodyContent">'+
+            '<p><b>'+ pollingBoundaries.features[random] +'</b>, has a size of </p>'+
+            '<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
+            'https://en.wikipedia.org/w/index.php?title=Uluru</a> '+
+            '(last visited June 22, 2009).</p>'+
+            '</div>'+
+            '</div>';
+            var infowindow = new google.maps.InfoWindow({
+             content: contentString
+            });
+            infowindow.open(map);
+          });
+          google.maps.event.addListener(flightPath, "mouseleave", function() {
+            var random = Math.floor(Math.random() * pollingBoundaries.features.length);
+            var contentString = '<div id="content">'+
+            '<div id="siteNotice">'+
+            '</div>'+
+            '<h1 id="firstHeading" class="firstHeading">' + "Ward " + pollingBoundaries.features[random].properties.WARD + '</h1>'+
+            '<div id="bodyContent">'+
+            '<p><b>'+ "Ward " + pollingBoundaries.features[random].properties.WARD + '</b>, has a registered vote size of </p>'+ pollingBoundaries.features[random].properties.VOTE_2014 +
+            '<p> a percentage of actual voters to registered voters at'+ Math.floor(Math.random() * 100 + 1) + "%" +
+            'https://en.wikipedia.org/w/index.php?title=Uluru</a> '+
+            '(last visited June 22, 2009).</p>'+
+            '</div>'+
+            '</div>';
+            var infowindow = new google.maps.InfoWindow({
+             content: contentString
+            });
+            infowindow.close(map);
+          })
         }
       }
     </script>
